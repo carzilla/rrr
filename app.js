@@ -110,6 +110,7 @@ function movePlayer(id, axis, adjustment){
             if(gameMap[player_x][player_y + adjustment] == TILE_TREE){
                 return;
             }
+            
             playerLocations.set(id, {x: player_x, y: player_y + adjustment});
         }
     }
