@@ -128,6 +128,9 @@ function movePlayer(id, axis, adjustment){
 
 }
 
+/***
+ * sends map to player
+ */
 function renderMap(id){
     var playerX = playerLocations.get(id).x;
     var playerY = playerLocations.get(id).y;
