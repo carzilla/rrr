@@ -93,11 +93,13 @@ let Application = PIXI.Application,
 let app = new PIXI.Application({width: gameWidth, height: gameHeight});
 
 app.renderer.backgroundColor = 0xaaaaaa;
-document.body.appendChild(app.view);
+
+document.querySelector("#gamebox").appendChild(app.view);
 
 loader.add("images/grass.png")
 .add("dudeImage", "images/dude.png")
 .add("evilImage", "images/evil.png")
+.add("treeImage", "images/tree.png")
 .load(setup);
 
 
@@ -131,7 +133,14 @@ function gameLoop(delta){
             var start_x = Math.floor(i * tile);
             var start_y = Math.floor(j * tile);
 
-            if(mapdata[i][j] !== null){
+            if(mapdata[i][j] == 4){
+                let forestTile = new Sprite(resources['treeImage'].texture);
+                forestTile.x = start_x;
+                forestTile.y = start_y;
+                background.addChild(forestTile);
+
+            }
+            if(mapdata[i][j] == 3){
                 let grassTile = new Sprite(resources['images/grass.png'].texture);
                 grassTile.x = start_x;
                 grassTile.y = start_y;
@@ -139,11 +148,20 @@ function gameLoop(delta){
                 
             }
             if(mapdata[i][j] == 1){
+                let grassTile = new Sprite(resources['images/grass.png'].texture);
+                grassTile.x = start_x;
+                grassTile.y = start_y;
+                background.addChild(grassTile);
                 dude.x = start_x;
                 dude.y = start_y;
                 foreground.addChild(dude);
             }
             if(mapdata[i][j] == 2){
+                let grassTile = new Sprite(resources['images/grass.png'].texture);
+                grassTile.x = start_x;
+                grassTile.y = start_y;
+                
+                background.addChild(grassTile);
                 let evilDude = new Sprite(resources['evilImage'].texture);
                 evilDude.x = start_x;
                 evilDude.y = start_y

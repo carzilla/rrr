@@ -4,8 +4,6 @@ var mysql = require('mysql')
 var http = require('http').Server(app)
 var socket = require('socket.io')(http)
 
-
-
 app.set('view engine', 'ejs')
 app.set('views', './views')
 app.use(express.static('static'));
@@ -14,6 +12,18 @@ app.use(express.static('static'));
 app.get('/', (req, res) => {
     res.render('index', {title: 'REBOOT. REFRESH. RESTART.'})
 })
+
+
+const TILE_GRASS = 3;
+const TILE_TREE = 4;
+const STATE_DEAD = 0;
+const STATE_RUNNING = 1;
+const STATE_FULL = 2;
+
+
+let gameMap;
+let gameState = STATE_DEAD;
+
 
 nicknames = new Map();
 playerLocations = new Map();
@@ -26,8 +36,26 @@ function lookupName(id){
     return nicknames.get(id) ? nicknames.get(id) : id;
 }
 
+/**
+ * Initialize a player. Checks if there is a need to generate a map or not.
+ * @param {string} id 
+ */
 function initializePlayer(id){
-    playerLocations.set(id, {x: randomizer(50), y: randomizer(50)});
+    /* Check the gameState. If it's the first player, we need to generate a map too */
+    checkGamestate();
+    /* Add the player to the map of players */
+    playerLocations.set(id, {x: randomizer(100), y: randomizer(100)});
+}
+
+function checkGamestate(){
+    if(gameState == STATE_DEAD){
+        generateMap();
+    }
+    if(gameState == STATE_RUNNING){
+        if(playerLocations.length === 0){
+            gameState == STATE_DEAD;
+        }
+    }
 }
 
 function create2DArray(numRows, numColumns) {
@@ -42,8 +70,36 @@ function create2DArray(numRows, numColumns) {
 
 function removePlayer(id){
     playerLocations.delete(id);
+    checkGamestate();
 }
 
+/**
+ * Generates map at initial stage of the game.
+ */
+function generateMap(){
+    console.log("generating map");
+    gameMap = create2DArray(100,100);
+    for(let x = 0; x < gameMap.length; x++){
+        for(let y = 0; y < gameMap[x].length; y++){
+            if(randomizer(10) == 9){
+                
+                gameMap[x][y] = TILE_TREE;
+            }
+            else {
+                gameMap[x][y] = TILE_GRASS;
+            }
+
+        }
+    }
+    gameState = STATE_RUNNING;
+    
+}
+/**
+ * 
+ * @param {string} id 
+ * @param {char} axis 
+ * @param {int} adjustment 
+ */
 function movePlayer(id, axis, adjustment){
     let player_x = playerLocations.get(id).x;
     let player_y = playerLocations.get(id).y;
@@ -51,6 +107,9 @@ function movePlayer(id, axis, adjustment){
         if(player_y + adjustment < 0 || player_y + adjustment > 100){
 
         }else {
+            if(gameMap[player_x][player_y + adjustment] == TILE_TREE){
+                return;
+            }
             playerLocations.set(id, {x: player_x, y: player_y + adjustment});
         }
     }
@@ -58,6 +117,10 @@ function movePlayer(id, axis, adjustment){
         if(player_x + adjustment < 0 || player_x + adjustment > 100){
 
         }else {
+            if(gameMap[player_x + adjustment][player_y] == TILE_TREE){
+                return;
+            }
+
             playerLocations.set(id, {x: player_x + adjustment, y: player_y});
         }
 
@@ -85,19 +148,19 @@ function renderMap(id){
             else {
                 locs[tmpx - start_x][tmpy - start_y] = 2;
             }
-            console.log('found! ' + target + ' origin: ' + id);
+            
         }
     }
-    //console.log(locs);
 
     for(let x = 0; x < locs.length; x++){
         for(let y = 0; y < locs[x].length; y++){
-            if(start_x + x < 0 || start_y + y < 0 || start_y + y > 50 || start_x + x > 50){
-                console.log('skip' + x + ' ' + y + ' on ' + start_x);
+            if(start_x + x < 0 || start_y + y < 0 || start_y + y > 100 || start_x + x > 100){                
                 continue;
             }
             if(locs[x][y] === undefined){
-                locs[x][y] = 3;
+                
+                locs[x][y] = gameMap[start_x + x][start_y + y];
+                console.log("need to fill" + gameMap[start_x + x][start_y + y]);
             }
         }
     }
