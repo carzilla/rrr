@@ -1,0 +1,11 @@
+* {
+    font-family: 'Verdana';
+}
+.intel_box {
+    font-size: 0.5em;
+}
+#game_map {
+    width: 500px;
+    height: 500px;
+    background-color: #aaa;
+}
