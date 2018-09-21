@@ -104,7 +104,7 @@ function movePlayer(id, axis, adjustment){
     let player_x = playerLocations.get(id).x;
     let player_y = playerLocations.get(id).y;
     if(axis == 'y'){
-        if(player_y + adjustment < 0 || player_y + adjustment > 100){
+        if(player_y + adjustment < 0 || player_y + adjustment > 99){
 
         }else {
             if(gameMap[player_x][player_y + adjustment] == TILE_TREE){
@@ -114,7 +114,7 @@ function movePlayer(id, axis, adjustment){
         }
     }
     if(axis == 'x'){
-        if(player_x + adjustment < 0 || player_x + adjustment > 100){
+        if(player_x + adjustment < 0 || player_x + adjustment > 99){
 
         }else {
             if(gameMap[player_x + adjustment][player_y] == TILE_TREE){
@@ -154,7 +154,7 @@ function renderMap(id){
 
     for(let x = 0; x < locs.length; x++){
         for(let y = 0; y < locs[x].length; y++){
-            if(start_x + x < 0 || start_y + y < 0 || start_y + y > 100 || start_x + x > 100){                
+            if(start_x + x < 0 || start_y + y < 0 || start_y + y >= 100 || start_x + x >= 100){                
                 continue;
             }
             if(locs[x][y] === undefined){
