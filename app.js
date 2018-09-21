@@ -158,9 +158,9 @@ function renderMap(id){
                 continue;
             }
             if(locs[x][y] === undefined){
-                
-                locs[x][y] = gameMap[start_x + x][start_y + y];
                 console.log("need to fill" + gameMap[start_x + x][start_y + y]);
+                locs[x][y] = gameMap[start_x + x][start_y + y];
+                
             }
         }
     }
