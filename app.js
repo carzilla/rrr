@@ -44,7 +44,7 @@ function initializePlayer(id){
     /* Check the gameState. If it's the first player, we need to generate a map too */
     checkGamestate();
     /* Add the player to the map of players */
-    playerLocations.set(id, {x: randomizer(100), y: randomizer(100)});
+    playerLocations.set(id, {x: randomizer(100), y: randomizer(100), last_direction: ''});
 }
 
 function checkGamestate(){
@@ -111,7 +111,7 @@ function movePlayer(id, axis, adjustment){
                 return;
             }
             
-            playerLocations.set(id, {x: player_x, y: player_y + adjustment});
+            playerLocations.set(id, {x: player_x, y: player_y + adjustment, last_direction: {direction: axis, adjustment: adjustment}});
         }
     }
     if(axis == 'x'){
@@ -122,7 +122,7 @@ function movePlayer(id, axis, adjustment){
                 return;
             }
 
-            playerLocations.set(id, {x: player_x + adjustment, y: player_y});
+            playerLocations.set(id, {x: player_x + adjustment, y: player_y, last_direction: {direction: axis, adjustment: adjustment}});
         }
 
     }
@@ -162,7 +162,6 @@ function renderMap(id){
                 continue;
             }
             if(locs[x][y] === undefined){
-                console.log("need to fill" + gameMap[start_x + x][start_y + y]);
                 locs[x][y] = gameMap[start_x + x][start_y + y];
                 
             }
@@ -204,11 +203,11 @@ socket.on('connection', function(socket){
                 continue;
             }
             socket.to(target).emit('game', renderMap(target));
-            console.log('sending new map');
         }
+    });
 
-
-
+    socket.on('attack', (data) => {
+        
     });
     /* nickname changes */
     socket.on('nickname', (data) => {
