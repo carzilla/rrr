@@ -65,8 +65,22 @@ inputter.addEventListener('keypress', (keycode) => {
 
 window.addEventListener('keydown', (keycode) => {
     if(keycode.which == 32){
-        socket.emit('attack');
-        keycode.preventDefault();
+        let items = document.querySelectorAll(".input_item");
+        let focus = false;
+        items.forEach((e) => {
+            
+            if(document.activeElement == e){
+                focus = true;
+            }
+        });
+
+        
+        if(!focus){
+            PIXI.sound.play('attack');
+            
+            socket.emit('attack');
+            keycode.preventDefault();
+        }
     }
     /* up */
     if(keycode.which == 38){
@@ -126,6 +140,7 @@ loader.add("images/grass.png")
 .add("boomImage", 'images/boom.png')
 .load(setup);
 
+PIXI.sound.add('attack', 'sfx/attack.mp3');
 
 
 
