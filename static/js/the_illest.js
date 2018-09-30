@@ -77,7 +77,7 @@ window.addEventListener('keydown', (keycode) => {
         
         if(!focus){
             PIXI.sound.play('attack');
-            
+
             socket.emit('attack');
             keycode.preventDefault();
         }
@@ -138,9 +138,10 @@ loader.add("images/grass.png")
 .add("evilImage", "images/evil.png")
 .add("treeImage", "images/tree.png")
 .add("boomImage", 'images/boom.png')
+.add('attack', 'sfx/attack.mp3')
 .load(setup);
 
-PIXI.sound.add('attack', 'sfx/attack.mp3');
+//PIXI.sound.add('attack', 'sfx/attack.mp3');
 
 
 
