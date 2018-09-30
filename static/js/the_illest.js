@@ -208,6 +208,10 @@ function gameLoop(delta){
     updateBooms();
     updateKillfeed();
 
+    if(mapdata = undefined){
+        return;
+    }
+
     for(var i = 0; i < mapdata.length; i++){
         for(var j = 0; j < mapdata[i].length; j++){
             var start_x = Math.floor(i * tile);
