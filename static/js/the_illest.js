@@ -208,7 +208,7 @@ function gameLoop(delta){
     updateBooms();
     updateKillfeed();
 
-    if(mapdata = undefined){
+    if(mapdata == undefined){
         return;
     }
 
