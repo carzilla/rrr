@@ -8,7 +8,11 @@ var mapdata;
 
 var receiver = document.querySelector(".chatbox");
 var intel_box = document.querySelector('.intel_box');
+let killfeed = Array();
+let x = 0;
+let y = 0;
 
+let finalwords = "";
 socket.on('swag', function(data) {
     receiver.innerHTML += "<br>" + data;
 });
@@ -16,15 +20,29 @@ socket.on('swag', function(data) {
 socket.on('intel', function(data){
     intel_box .innerHTML += "<br>" + data;
 });
+socket.on('attack', function(data){
+    addBoom(data);
+});
+socket.on('killfeed', function(data){
+    console.log("BOOM BABY! " + data + " DIED");
+    addToKillfeed(data);
+    
+});
+socket.on("youded", function(data){
+    console.log(data + 'killed my sorry ass');
+    finalwords = data + " pwned you";
+});
 socket.on('game', function(data){
     if(data.length > 0){
         mapdata = data;
        // draw();
     }else {
+        x = data.x;
+        y = data.y;
         document.querySelector(".current_location").innerHTML = "x: " + data.x + " y:" + data.y;
 
     }
-    console.log(mapdata);
+    //console.log(mapdata);
     
 
 });
@@ -46,6 +64,10 @@ inputter.addEventListener('keypress', (keycode) => {
 })
 
 window.addEventListener('keydown', (keycode) => {
+    if(keycode.which == 32){
+        socket.emit('attack');
+        keycode.preventDefault();
+    }
     /* up */
     if(keycode.which == 38){
         keycode.stopPropagation();
@@ -91,6 +113,7 @@ let Application = PIXI.Application,
     resources = PIXI.loader.resources,
     Sprite = PIXI.Sprite;
 let app = new PIXI.Application({width: gameWidth, height: gameHeight});
+let booms = Array();
 
 app.renderer.backgroundColor = 0xaaaaaa;
 
@@ -100,6 +123,7 @@ loader.add("images/grass.png")
 .add("dudeImage", "images/dude.png")
 .add("evilImage", "images/evil.png")
 .add("treeImage", "images/tree.png")
+.add("boomImage", 'images/boom.png')
 .load(setup);
 
 
@@ -114,19 +138,59 @@ function setup() {
     console.log('setup done');
 
 }
+function addBoom(boomdata){
+    let boom = {data: boomdata, when: Date.now()}
+    booms.push(boom);
+}
+function updateBooms(){
+    let now = Date.now();
+    for(let i in booms){
+        
+        if(now - booms[i].when > 500){
+            booms.splice(i, 1);
+        }
+    }
+}
+function distanceFromPlayer(coords){
+    let obj_x = coords.x;
+    let obj_y = coords.y;
+    let dist_x = x - obj_x;
+    let dist_y = y - obj_y;
+
+    return {x: dist_x, y: dist_y};
+
+}
+
+function addToKillfeed(dead_player){
+    console.log('added to killfeed');
+    killfeed.push({player: dead_player, when: Date.now()});
+}
+function updateKillfeed(){
+    let now = Date.now();
+    for(let i in killfeed){
+        if(now - killfeed[i].when > 2000){
+            killfeed.splice(i, 1);
+        }
+    }
+}
 
 function gameLoop(delta){
     let tile = Math.floor(gameWidth / tileAmount);
 
     let background = new PIXI.Container();
-    background.zIndex = 1;
+    background.zIndex = 2;
 
     let foreground = new PIXI.Container();
+    foreground.zIndex = 1;
+
+    let superforeground = new PIXI.Container();
 
     let dude = new Sprite(resources['dudeImage'].texture);
 
     app.stage.removeChildren();
 
+    updateBooms();
+    updateKillfeed();
 
     for(var i = 0; i < mapdata.length; i++){
         for(var j = 0; j < mapdata[i].length; j++){
@@ -169,8 +233,35 @@ function gameLoop(delta){
             }
         }
     }
+
+    for(let i in booms){
+        let boom = new Sprite(resources['boomImage'].texture);
+        let b_dist = distanceFromPlayer(booms[i].data);
+
+        boom.x = Math.floor((4 - b_dist.x) * tile);
+        boom.y = Math.floor((4 - b_dist.y) * tile);
+        superforeground.addChild(boom);
+    }
+
+    for(let i in killfeed){
+        console.log("OK?");
+        let text = new PIXI.Text(killfeed[i].player + ' GOT ROLFSTOMPED',{fontFamily : 'Arial', fontSize: 24, fill : 0xff1010, align : 'center', dropShadow: true, fontStyle: 'bold'});
+        text.y = gameHeight / 2;
+        
+
+        superforeground.addChild(text);
+    }
+    if(finalwords != ""){
+        let text = new PIXI.Text(finalwords,{fontFamily : 'Arial', fontSize: 30, fill : 0xff1010, align : 'center', dropShadow: true, fontStyle: 'bold'});
+        text.y = gameHeight / 2;
+        
+
+        superforeground.addChild(text);
+
+    }
     app.stage.addChild(background);
     app.stage.addChild(foreground);
+    app.stage.addChild(superforeground);
 
     //console.log(app.stage.children.length);
 

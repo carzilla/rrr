@@ -19,6 +19,9 @@ const TILE_TREE = 4;
 const STATE_DEAD = 0;
 const STATE_RUNNING = 1;
 const STATE_FULL = 2;
+const PLAYER_ALIVE = 1;
+const PLAYER_DEAD = 2;
+
 
 
 let gameMap;
@@ -44,7 +47,7 @@ function initializePlayer(id){
     /* Check the gameState. If it's the first player, we need to generate a map too */
     checkGamestate();
     /* Add the player to the map of players */
-    playerLocations.set(id, {x: randomizer(100), y: randomizer(100), last_direction: ''});
+    playerLocations.set(id, {x: randomizer(100), y: randomizer(100), last_direction: '', state: PLAYER_ALIVE});
 }
 
 function checkGamestate(){
@@ -71,6 +74,39 @@ function create2DArray(numRows, numColumns) {
 function removePlayer(id){
     playerLocations.delete(id);
     checkGamestate();
+}
+/**
+ * Handles attacks
+ * @param {string} id 
+ */
+function handleAttack(id){
+    let player = playerLocations.get(id);
+    let d = player.last_direction.direction;
+    let adj = player.last_direction.adjustment;
+    let target_coord = {x: player.x, y: player.y};
+    if(d == 'x'){
+        target_coord.x = player.x + adj;
+    }
+    if(d == 'y'){
+        target_coord.y = player.y + adj;
+    }
+
+
+    playerLocations.forEach((cur, key) => {
+        console.log("checking");
+        if(cur.x == target_coord.x && cur.y == target_coord.y){
+            cur.state = PLAYER_DEAD;
+            let nickname = (nicknames.get(key) ? nicknames.get(key) : key ) ;
+            socket.sockets.emit("killfeed", nickname);
+            socket.sockets.to(key).emit("youded", (nicknames.get(id) ? nicknames.get(id) : id ));
+
+            //socket.broadcast.emit("killfeed", nickname);
+        }
+        
+    });
+
+    return target_coord;
+
 }
 
 /**
@@ -101,6 +137,9 @@ function generateMap(){
  * @param {int} adjustment 
  */
 function movePlayer(id, axis, adjustment){
+    if(playerLocations.get(id).state == PLAYER_DEAD){
+        return;
+    }
     let player_x = playerLocations.get(id).x;
     let player_y = playerLocations.get(id).y;
     if(axis == 'y'){
@@ -140,9 +179,11 @@ function renderMap(id){
     start_y = playerY - 4;
 
     var locs = create2DArray(9, 9);
-
+    console.log(playerLocations);
     for(var [target, loc] of playerLocations){
-        
+        if(loc.state == PLAYER_DEAD){
+            continue;
+        }
         var tmpx = parseInt(loc.x);
         var tmpy = parseInt(loc.y);
         if((tmpx >= start_x && tmpx <= playerX + 4) && (tmpy >= start_y && tmpy <= playerY + 4)){
@@ -207,6 +248,10 @@ socket.on('connection', function(socket){
     });
 
     socket.on('attack', (data) => {
+        let result = handleAttack(socket.id);
+        socket.broadcast.emit('attack', result);
+        socket.emit('attack', result);
+
         
     });
     /* nickname changes */
@@ -228,7 +273,7 @@ socket.on('connection', function(socket){
                 continue;
             }
             socket.to(target).emit('game', renderMap(target));
-            console.log('sending new map');
+            
         }
         
     });
@@ -242,7 +287,7 @@ socket.on('connection', function(socket){
                 continue;
             }
             socket.to(target).emit('game', renderMap(target));
-            console.log('sending new map');
+            
         }
     
     });
