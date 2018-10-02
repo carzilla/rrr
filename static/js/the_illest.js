@@ -87,6 +87,7 @@ window.addEventListener('keydown', (keycode) => {
         keycode.stopPropagation();
         keycode.preventDefault();
         socket.emit('move', 'up');
+        PIXI.sound.play('sfxGrass');
         
     }
     /* right */
@@ -94,6 +95,7 @@ window.addEventListener('keydown', (keycode) => {
         keycode.stopPropagation();
         keycode.preventDefault();
         socket.emit('move', 'right');
+        PIXI.sound.play('sfxGrass');
         
     }
     /* left */
@@ -101,6 +103,7 @@ window.addEventListener('keydown', (keycode) => {
         keycode.stopPropagation();
         keycode.preventDefault();
         socket.emit('move', 'left');
+        PIXI.sound.play('sfxGrass');
 
     }
     /* down */
@@ -108,6 +111,7 @@ window.addEventListener('keydown', (keycode) => {
         keycode.stopPropagation();
         keycode.preventDefault();
         socket.emit('move', 'down');
+        PIXI.sound.play('sfxGrass');
 
     }
 })
@@ -139,6 +143,7 @@ loader.add("images/grass.png")
 .add("treeImage", "images/tree.png")
 .add("boomImage", 'images/boom.png')
 .add('attack', 'sfx/attack.mp3')
+.add('sfxGrass', 'sfx/grass.mp3')
 .load(setup);
 
 //PIXI.sound.add('attack', 'sfx/attack.mp3');
