@@ -1,8 +1,11 @@
+
 const express = require('express')
 const app = express()
 var mysql = require('mysql')
 var http = require('http').Server(app)
 var socket = require('socket.io')(http)
+var npc = require('./npc.js');
+
 
 app.set('view engine', 'ejs')
 app.set('views', './views')
@@ -16,6 +19,7 @@ app.get('/', (req, res) => {
 
 const TILE_GRASS = 3;
 const TILE_TREE = 4;
+const ENEMY_FATTY = 5;
 const STATE_DEAD = 0;
 const STATE_RUNNING = 1;
 const STATE_FULL = 2;
@@ -24,10 +28,12 @@ const PLAYER_DEAD = 2;
 
 
 
+
 let gameMap;
 let gameState = STATE_DEAD;
 
 
+npcs = new Array();
 nicknames = new Map();
 playerLocations = new Map();
 
@@ -114,11 +120,11 @@ function handleAttack(id){
  */
 function generateMap(){
     console.log("generating map");
-    gameMap = create2DArray(100,100);
+    gameMap = create2DArray(100, 100);
+    /* Generate enviorment */
     for(let x = 0; x < gameMap.length; x++){
         for(let y = 0; y < gameMap[x].length; y++){
-            if(randomizer(10) == 9){
-                
+            if(randomizer(10) == 9){                
                 gameMap[x][y] = TILE_TREE;
             }
             else {
@@ -127,8 +133,52 @@ function generateMap(){
 
         }
     }
+
+
+    /* Add fatties to the map */
+    let fattyAmount = (randomizer(100) > 90) ? 2 : 1;
+    
+    /* Generate fatties */
+    for(let i = 0; i <fattyAmount; i++){
+        let isValid = false;
+        while(!isValid){
+            let potential_x = randomizer(100);
+            let potential_y = randomizer(100);
+
+            if(validPosition(potential_x, potential_y, npc.Fatty.getWidth, npc.Fatty.getWidth)){
+                let tmp = new npc.Fatty(potential_x, potential_y);
+                isValid = true;
+                npcs.push(tmp);
+            }
+        }
+
+    }
+
+
+
     gameState = STATE_RUNNING;
     
+}
+/**
+ * Function that checks if a position is a valid position. Can be used for generating NPCs.
+ * @param {int} x 
+ * @param {int} y 
+ * @param {int} width 
+ * @param {int} height 
+ */
+function validPosition(x, y, width = 1, height = 1){
+    for(let px = 0; px < width; px++){
+        if(gameMap[x + px][y] == TILE_TREE){
+            return false;
+        }
+    }
+    for(let py = 0; py < height; py++){
+        if(gameMap[x][y + py] == TILE_TREE){
+            return false;
+        }
+    }
+
+    return true;
 }
 /**
  * 
@@ -179,7 +229,7 @@ function renderMap(id){
     start_y = playerY - 4;
 
     var locs = create2DArray(9, 9);
-    console.log(playerLocations);
+    
     for(var [target, loc] of playerLocations){
         if(loc.state == PLAYER_DEAD){
             continue;

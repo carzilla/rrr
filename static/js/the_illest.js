@@ -6,6 +6,7 @@ socket.on('connect', function() {
 var mapdata;
 
 
+
 var receiver = document.querySelector(".chatbox");
 var intel_box = document.querySelector('.intel_box');
 let killfeed = Array();
@@ -144,6 +145,7 @@ loader.add("images/grass.png")
 .add("boomImage", 'images/boom.png')
 .add('attack', 'sfx/attack.mp3')
 .add('sfxGrass', 'sfx/grass.mp3')
+.add('fattyImage', 'images/fatty.png')
 .load(setup);
 
 //PIXI.sound.add('attack', 'sfx/attack.mp3');
